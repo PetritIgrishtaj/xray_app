@@ -1,5 +1,5 @@
 from flask import Flask, render_template, flash, request, redirect
-
+import os
 
 app = Flask(__name__)
 
@@ -39,3 +39,7 @@ def upload_file():
                 filename = secure_filename(file.filename)
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         flash('File(s) successfully uploaded')
+
+        
+if __name__ == '__main__':
+    app.run()
