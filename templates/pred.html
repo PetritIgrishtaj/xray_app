@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<pre>{{data}}</pre>
+<h2><left>Model predictions</left></h2>
+{% if filename %}
+    <center><img src ="{{filename}}"/></center>
+{% else %}
+  <h1>no image for whatever reason</h1>
+{% endif %}
+<a href="{{ url_for('upload_form') }}"><button>Home</button></a>
+</body>
+</html>
