@@ -11,13 +11,14 @@ import torch.nn as nn
 from torchvision import datasets, models, transforms
 import numpy as np
 import cv2
-from numpy import nan_to_num
-from torchvision.transforms import Compose, Normalize, ToTensor
 
-rcParams['figure.figsize'] = 50, 50
+
+rcParams['figure.figsize'] = 20, 20
 
 transform = transforms.Compose([
     transforms.Resize(224),
+    transforms.RandomAffine(7),
+    transforms.RandomHorizontalFlip(p=0.25),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406],
                          std=[0.229, 0.224, 0.225])
@@ -64,9 +65,9 @@ def plot_pred(values, filename):
         else:
             color.append('blue')
     plt.bar(dis_labels, values, color=color)
-    plt.title('Model predictions', fontsize=50)
-    plt.xticks(rotation=90, fontsize=50)
-    plt.yticks(fontsize=50)
+    plt.title('Model predictions', fontsize=20)
+    plt.xticks(rotation=90, fontsize=20)
+    plt.yticks(fontsize=20)
     plt.savefig(f'cam_pred/plot_{filename}')
     plt.close()
 
@@ -74,7 +75,7 @@ def plot_pred(values, filename):
 def predict(filename):
     df = pd.DataFrame.from_dict({'idx': [f'{filename}'], 'findings': ['none']})
     data = ChestXRayImageDataset('', df, transform=transform)
-    loader = torch.utils.data.DataLoader(data, batch_size=64)
+    loader = torch.utils.data.DataLoader(data, batch_size=128)
 
     with torch.no_grad():
         train_preds = get_all_preds(model, loader)
@@ -94,26 +95,6 @@ def predict(filename):
     vis_gradcam = show_cam_on_image(rgb_img, grayscale_cam_gc)
     cv2.imwrite(f'cam_pred/heat_{filename}', vis_gradcam)
     return pred_list
-
-
-def together(file):
-    layer1 = Image.open(f'cam_pred/heat_{file}')
-    layer2 = Image.open(f'cam_pred/plot_{file}')
-
-    layer1 = layer1.resize((650, 650), Image.ANTIALIAS)
-    layer2 = layer2.resize((650, 650), Image.ANTIALIAS)
-
-    fs = [layer1, layer2]
-    ncol = 2
-    nrow = 1
-    x, y = fs[1].size
-    cvs = Image.new('RGB', (x * ncol, y * nrow))
-
-    for i in range(len(fs)):
-        px, py = x * int(i / nrow), y * (i % nrow)
-        cvs.paste(fs[i], (px, py))
-
-    cvs.save(f'cam_pred/together_{file}')
 
 
 def top4(values, filename):
