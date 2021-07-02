@@ -3,6 +3,7 @@
 An application combining elements from flask and dash to dynamically predict chest x-rays and get visualizations with GRAD-CAM.
 
 To run locally:
+Add a 'weights' folder and add .pth file containing the weights of the resnet (not possible in git due to ressoucre restrictions).
 ```
 python main.py 
 ```
