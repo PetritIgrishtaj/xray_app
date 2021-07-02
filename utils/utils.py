@@ -11,6 +11,7 @@ import torch.nn as nn
 from torchvision import datasets, models, transforms
 import numpy as np
 import cv2
+import os
 
 
 rcParams['figure.figsize'] = 20, 20
@@ -39,7 +40,7 @@ def get_model(num_classes):
 
 
 model = get_model(15)
-model.load_state_dict(torch.load('saved_model/model_weights.pth', map_location=torch.device('cpu')))
+model.load_state_dict(torch.load(f'saved_model/{os.listdir("weights")[0]}', map_location=torch.device('cpu')))
 
 
 def get_all_preds(model, loader):
