@@ -1,6 +1,4 @@
 from PIL import Image
-#from heatmap.show_img import preprocess_image, show_cam_on_image
-#from heatmap.GradCamClass import GradCAM
 from pytorch_grad_cam import GradCAM
 from pytorch_grad_cam.utils.image import preprocess_image, show_cam_on_image
 from DataSet.ChestXRayImageDatasetClass import ChestXRayImageDataset
