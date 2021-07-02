@@ -12,7 +12,6 @@ from dash_extensions import Download
 from dash_extensions.snippets import send_file
 import dash_bootstrap_components as dbc
 
-
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 # initialize dash and flask
@@ -30,8 +29,8 @@ server.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.layout = html.Div([
     html.Div(id='dd_div'),
     html.Div(id='output-data-upload'),
-    html.Img(id='image'),# height='600px', width='600px'),
-    html.Img(id='image2'),# height='600px', width='600px'),
+    html.Img(id='image'),
+    html.Img(id='image2'),
     html.Br(),
     dcc.Loading(
             id="loading-1",
@@ -39,10 +38,15 @@ app.layout = html.Div([
             fullscreen=True,
             type='circle'
         ),
-    html.Button('Start predictions!', id='pred', value='Click to start predictions', n_clicks=0, style={'float': 'left','margin': 'auto'}),
+    html.Button('Start predictions!', id='pred', value='Click to start predictions', n_clicks=0,
+                style={'float': 'left','margin': 'auto'}),
     html.A(html.Button('Home'),href='/', style={'float': 'left','margin': 'auto'}),
-    html.Div([html.Button("Download Image 1", id="btn1", n_clicks=0), Download(id="download1")], style={'float': 'left','margin': 'auto'}),
-    html.Div([html.Button("Download Image 2", id="btn2", n_clicks=0), Download(id="download2")], style={'float': 'left','margin': 'auto'})
+    html.Button('Get detailed view of heatmaps!', id='detailed', value='Click to start datailed run', n_clicks=0,
+                style={'float': 'left', 'margin': 'auto'}),
+    html.Div([html.Button("Download Image 1", id="btn1", n_clicks=0), Download(id="download1")],
+             style={'float': 'left','margin': 'auto'}),
+    html.Div([html.Button("Download Image 2", id="btn2", n_clicks=0), Download(id="download2")],
+             style={'float': 'left','margin': 'auto'})
 ])
 
 
@@ -76,26 +80,28 @@ def upload_file():
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 file.save(os.path.join(server.config['UPLOAD_FOLDER'], filename))
-        #flash('File(s) successfully uploaded')
         return redirect('/predictions')
 
 
-@app.callback([Output('dd_div', 'children'), Output("loading-output-1", "value")], [Input('pred', 'n_clicks'), ])
-def start_pred(n_clicks):
+@app.callback([Output('dd_div', 'children'), Output("loading-output-1", "value")], [Input('pred', 'n_clicks'),Input('detailed', 'n_clicks') ])
+def start_pred(n_clicks, n_clicks2):
     if n_clicks > 0:
         files = [file for file in os.listdir(UPLOAD_FOLDER)]
         for file in files:
             pred_list = predict(file)
             plot_pred(pred_list, file)
-            #top4(pred_list,file)
+            if n_clicks2 > 0:
+                top4(pred_list, file)
         options = [{'label': 'Raw ' + i, 'value': 'static/' + i} for i in files]
         plots = [{'label': 'Plot ' + i, 'value': 'cam_pred/plot_' + i} for i in files]
         heat = [{'label': 'Heatmap ' + i, 'value': 'cam_pred/heat_' + i} for i in files]
-        #top4_heat = [{'label': 'Heatmap_top4 ' + i, 'value': 'cam_pred/together_' + i} for i in files]
-        all_files = options + plots + heat #+ top4_heat
+        if n_clicks2 > 0:
+            top4_heat = [{'label': 'Heatmap_top4 ' + i, 'value': 'cam_pred/together_' + i} for i in files]
+            all_files = options + plots + heat + top4_heat
+        else:
+            all_files = options + plots + heat
         return [html.Div([dcc.Dropdown(id='dd', options=all_files), dcc.Dropdown(id='dd2', options=all_files)])], n_clicks
     else:
-        progress = 1
         return [html.Div(id='...')],  n_clicks
 
 
@@ -132,10 +138,8 @@ def down2(n_clicks, value):
         return send_file(value)
 
 
-
 @server.after_request
 def add_header(response):
-    # response.cache_control.no_store = True
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
