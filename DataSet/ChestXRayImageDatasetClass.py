@@ -1,16 +1,12 @@
 import glob
 import random
 import os
-from functools import reduce
-from itertools import chain
 from typing import Any, Callable, List, Optional, Tuple
-
 import numpy as np
 import pandas as pd
 import torch
 from PIL import Image
 from torchvision.datasets import VisionDataset
-from torchvision.io import read_image
 
 
 class ChestXRayImageDataset(VisionDataset):
