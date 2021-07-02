@@ -26,12 +26,14 @@ server.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 server.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1
 server.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
+# dash app layout
 app.layout = html.Div([
     html.Div(id='dd_div'),
     html.Div(id='output-data-upload'),
     html.Img(id='image'),
     html.Img(id='image2'),
     html.Br(),
+    # adding a spinner, so that the user can see that the app is working
     dcc.Loading(
             id="loading-1",
             children=html.Div(id="loading-output-1"),
@@ -50,13 +52,12 @@ app.layout = html.Div([
 ])
 
 
-ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
-
 
 def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ['png', 'jpg', 'jpeg']
 
 
+# delete all existing images/predictions/heatmaps
 @server.route('/')
 def upload_form():
     for file in os.listdir(UPLOAD_FOLDER):
@@ -68,6 +69,7 @@ def upload_form():
     return render_template('upload.html')
 
 
+# save all uploaded images to the static folder
 @server.route('/', methods=['POST'])
 def upload_file():
     if request.method == 'POST':
@@ -83,6 +85,8 @@ def upload_file():
         return redirect('/predictions')
 
 
+# starting the predictions and returning a dropdown for the user to choose original images/heatmaps/plots of the predictions
+# if the user also wants more detailed heatmaps, he gets the heatmaps of the top 4 predicted images (while the original heatmap only shows the top predicted disease)
 @app.callback([Output('dd_div', 'children'), Output("loading-output-1", "value")], [Input('pred', 'n_clicks'),Input('detailed', 'n_clicks') ])
 def start_pred(n_clicks, n_clicks2):
     if n_clicks > 0:
@@ -105,6 +109,7 @@ def start_pred(n_clicks, n_clicks2):
         return [html.Div(id='...')],  n_clicks
 
 
+# showing an image inviting to select images via the dropdown
 @app.callback([Output('image', 'src'), Output('image', 'height'),
                Output('image', 'width')], Input('dd', 'value'))
 def update_layout(value):
@@ -122,13 +127,13 @@ def update_layout(value):
     return [f'data:image/png;base64,{encoded_image.decode()}', '650px', '650px']
 
 
+# possibility for the user to download the currently displayed images
 @app.callback(Output("download1", "data"), [Input("btn1", "n_clicks"), Input('dd', 'value')])
 def down1(n_clicks, value):
     if n_clicks > 0:
         if value is None:
             value = 'static_img/img1.png'
         return send_file(value)
-
 
 @app.callback(Output("download2", "data"), [Input("btn2", "n_clicks"), Input('dd2', 'value')])
 def down2(n_clicks, value):
