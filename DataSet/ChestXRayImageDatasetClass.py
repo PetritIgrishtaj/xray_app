@@ -31,7 +31,9 @@ class ChestXRayImageDataset(VisionDataset):
         super(ChestXRayImageDataset,
               self).__init__(root, transform=transform,
                              target_transform=target_transform)
-
+        
+        self.transform = transform
+        
         self.img_dir = os.path.join(root, self.rel_img_dir)
 
         for label in self.labels:
