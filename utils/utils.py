@@ -43,6 +43,7 @@ model = get_model(15)
 model.load_state_dict(torch.load(f'saved_model/{os.listdir("weights")[0]}', map_location=torch.device('cpu')))
 
 
+# get all predictions after the sigmoid
 def get_all_preds(model, loader):
     all_preds = torch.tensor([])
     for batch in loader:
@@ -56,6 +57,8 @@ def get_all_preds(model, loader):
     return tf.nn.sigmoid(all_preds)
 
 
+# plot probabilities for each disease and highlight the 3 diseases with the highest probabilitiy
+# save the barplot in the cam_pred folder
 def plot_pred(values, filename):
     plt.close('all')
     top3 = sorted(range(len(values)), key=lambda i: values[i])[-3:]
@@ -73,6 +76,8 @@ def plot_pred(values, filename):
     plt.close()
 
 
+# creates a loader for the uploaded image and predicts it and creates a heatmap with the grad-CAM approach
+# saves the heatmap in the cam_pred folder
 def predict(filename):
     df = pd.DataFrame.from_dict({'idx': [f'{filename}'], 'findings': ['none']})
     data = ChestXRayImageDataset('', df, transform=transform)
@@ -88,9 +93,9 @@ def predict(filename):
     rgb_img = np.float32(rgb_img) / 255
     input_tensor = preprocess_image(rgb_img, mean=[0.485, 0.456, 0.406],
                                     std=[0.229, 0.224, 0.225])
-    target_layer = model.layer4[-1]
+    target_layer = model.layer4[-1]  # recommended for the resnet50
     cam_gc = GradCAM(model=model, target_layer=target_layer, use_cuda=False)
-    target_category = None
+    target_category = None  # takes the class with the highest probability
     grayscale_cam_gc = cam_gc(input_tensor=input_tensor, target_category=target_category)
     grayscale_cam_gc = grayscale_cam_gc[0,:]
     vis_gradcam = show_cam_on_image(rgb_img, grayscale_cam_gc)
@@ -98,6 +103,8 @@ def predict(filename):
     return pred_list
 
 
+# creates heatmaps for the 4 classes with the highest probability and pastes them into one image
+# the image gets saved in the top4 folder
 def top4(values, filename):
     top4 = sorted(range(len(values)), key=lambda i: values[i])[-4:]
     for i, elem in enumerate(top4):
