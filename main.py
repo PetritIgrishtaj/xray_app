@@ -87,6 +87,7 @@ def upload_file():
 
 # starting the predictions and returning a dropdown for the user to choose original images/heatmaps/plots of the predictions
 # if the user also wants more detailed heatmaps, he gets the heatmaps of the top 4 predicted images (while the original heatmap only shows the top predicted disease)
+# two ways to do this: click the detailed button and then start the predictions or click the button after the predictions have been mada
 @app.callback([Output('dd_div', 'children'), Output("loading-output-1", "value")], [Input('pred', 'n_clicks'),Input('detailed', 'n_clicks') ])
 def start_pred(n_clicks, n_clicks2):
     if n_clicks > 0:
@@ -127,7 +128,7 @@ def update_layout(value):
     return [f'data:image/png;base64,{encoded_image.decode()}', '650px', '650px']
 
 
-# possibility for the user to download the currently displayed images
+# option for the user to download the currently displayed images
 @app.callback(Output("download1", "data"), [Input("btn1", "n_clicks"), Input('dd', 'value')])
 def down1(n_clicks, value):
     if n_clicks > 0:
