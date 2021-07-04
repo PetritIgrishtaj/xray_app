@@ -99,9 +99,7 @@ def predict(filename):
 
 
 def top4(values, filename):
-    print(filename)
     top4 = sorted(range(len(values)), key=lambda i: values[i])[-4:]
-    print(top4)
     for i, elem in enumerate(top4):
         rgb_img = cv2.imread(f'static/{filename}', 1)[:, :, ::-1]
         rgb_img = cv2.resize(rgb_img, (224, 224))
